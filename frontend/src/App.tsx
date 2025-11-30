@@ -13,6 +13,15 @@ function App() {
     init().then(() => setWasmReady(true));
   }, []);
 
+  // Render image after WASM initialised
+  useEffect(() => {
+    if (!wasmReady) return;
+
+    console.log("WASM is now ready");
+
+    // TODO: render image
+  }, [wasmReady])
+
   return (
     <>
       <div>

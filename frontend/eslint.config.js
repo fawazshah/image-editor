@@ -15,6 +15,7 @@ export default defineConfig([
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
     ],
+    ignores: ["src/wasm/*"],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,

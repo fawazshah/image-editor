@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import reactLogo from "./assets/react.svg";
+import Form from "react-bootstrap/Form";
 import viteLogo from "/vite.svg";
 import "./App.css";
 import init, { add } from "./wasm/wasm.js";
+import { Row } from "react-bootstrap";
 
 function App() {
-  const [count, setCount] = useState(0);
   const [wasmReady, setWasmReady] = useState(false);
 
   if (wasmReady) {
@@ -29,25 +29,19 @@ function App() {
   return (
     <>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <img src={viteLogo} className="logo" alt="Vite logo" />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1>Image Editor</h1>
+      <Form>
+        <Form.Group>
+          <Row>
+            <Form.Label>Blur</Form.Label>
+          </Row>
+          <Row>
+            <Form.Range min={0} max={100} />
+          </Row>
+        </Form.Group>
+      </Form>
     </>
   );
 }

@@ -1,16 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Form from "react-bootstrap/Form";
-import viteLogo from "/vite.svg";
 import "./App.css";
-import init, { add } from "./wasm/wasm.js";
+import init from "./wasm/wasm.js";
 import { Row } from "react-bootstrap";
 
 function App() {
   const [wasmReady, setWasmReady] = useState(false);
-
-  if (wasmReady) {
-    console.log(add(3, 4));
-  }
+  const [blur, setBlur] = useState(0);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Initialise WASM on initial render
   useEffect(() => {
@@ -21,24 +18,41 @@ function App() {
   useEffect(() => {
     if (!wasmReady) return;
 
-    console.log("WASM is now ready");
+    const img = new Image();
+    img.src = "/vite.png";
+    img.onload = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
+      const context = canvas.getContext("2d");
+      if (!context) return;
+
+      const scaledWidth = img.width * 0.5;
+      const scaledHeight = img.width * 0.5;
+
+      canvas.width = scaledWidth;
+      canvas.height = scaledHeight;
+      context.drawImage(img, 0, 0, scaledWidth, scaledHeight);
+    };
     // TODO: render image
   }, [wasmReady]);
 
   return (
     <>
-      <div>
-        <img src={viteLogo} className="logo" alt="Vite logo" />
-      </div>
+      <canvas ref={canvasRef} />
       <h1>Image Editor</h1>
       <Form>
         <Form.Group>
           <Row>
-            <Form.Label>Blur</Form.Label>
+            <Form.Label>Blur: {blur}</Form.Label>
           </Row>
           <Row>
-            <Form.Range min={0} max={100} />
+            <Form.Range
+              min={0}
+              max={100}
+              value={blur}
+              onChange={(e) => setBlur(Number(e.target.value))}
+            />
           </Row>
         </Form.Group>
       </Form>

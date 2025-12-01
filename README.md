@@ -1,4 +1,4 @@
-## Image Editor
+# Image Editor
 
 To build Rust code targetting WASM:
 
@@ -11,4 +11,10 @@ To run React + Vite application:
 
 ```
 npm run dev
+```
+
+To view documentation for the Rust code:
+
+```
+cargo doc --open
 ```

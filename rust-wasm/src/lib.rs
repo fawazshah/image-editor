@@ -5,6 +5,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 #[wasm_bindgen(start)]
 pub fn start() {
+    // Allows displaying real Rust error message in browser console, instead of placeholder error
     console_error_panic_hook::set_once();
 }
 

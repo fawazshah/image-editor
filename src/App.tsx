@@ -28,7 +28,7 @@ function App() {
       if (!context) return;
 
       canvas.width = img.width * 0.5;
-      canvas.height = img.width * 0.5;
+      canvas.height = img.height * 0.5;
       context.drawImage(img, 0, 0, canvas.width, canvas.height);
 
       // Preserve reference to original data for blurring
@@ -37,7 +37,7 @@ function App() {
     };
   }, []);
 
-  // Blur image if blur changed
+  // Blur image if blur factor changed
   useEffect(() => {
     if (!wasmReady) return;
     if (!canvasRef.current) return;

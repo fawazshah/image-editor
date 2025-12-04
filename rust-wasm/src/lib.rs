@@ -1,6 +1,4 @@
-use std::io::Cursor;
-
-use image::{DynamicImage, load_from_memory};
+use image::{DynamicImage, ImageBuffer, Rgba};
 use wasm_bindgen::prelude::wasm_bindgen;
 
 #[wasm_bindgen(start)]
@@ -40,16 +38,14 @@ pub fn base64_encode(input: u32) -> String {
 
 /// Blurs an input image, given in bytes, by a blur factor. Blur factor must be between 0 and 100
 #[wasm_bindgen]
-pub fn blur(input_bytes: &[u8], blur: u32) -> Vec<u8> {
-    let blur_sigma: f32 = blur as f32 / 33.0;
-    let img: DynamicImage = load_from_memory(input_bytes).expect("Failed to load image");
+pub fn blur(pixel_bytes: &[u8], height: u32, width: u32, blur: u32) -> Vec<u8> {
+    // Returns vector as references cannot be returned via wasm-bindgen
+    let blur_sigma: f32 = blur as f32 / 10.0;
+    let img: DynamicImage = DynamicImage::ImageRgba8(
+        ImageBuffer::<Rgba<u8>, _>::from_raw(width, height, pixel_bytes.to_vec())
+            .expect("Invalid dimensions"),
+    );
+
     let blurred: DynamicImage = img.blur(blur_sigma);
-
-    let mut output: Vec<u8> = Vec::new();
-    let mut cursor: Cursor<&mut Vec<u8>> = Cursor::new(&mut output);
-    blurred
-        .write_to(&mut cursor, image::ImageFormat::Png)
-        .expect("Failed to write image to PNG");
-
-    output
+    blurred.into_bytes()
 }

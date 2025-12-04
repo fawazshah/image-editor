@@ -1,25 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import Form from "react-bootstrap/Form";
 import "./App.css";
-import init from "./wasm/wasm.js";
+import viteImg from "./assets/vite.png";
+import init, { blur } from "./wasm/wasm.js";
 import { Row } from "react-bootstrap";
 
 function App() {
   const [wasmReady, setWasmReady] = useState(false);
-  const [blur, setBlur] = useState(0);
+  const [blurFactor, setBlurFactor] = useState(1);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const originalImageRef = useRef<ImageData>(null);
 
   // Initialise WASM on initial render
   useEffect(() => {
     init().then(() => setWasmReady(true));
   }, []);
 
-  // Render image after WASM initialised
+  // Render image
   useEffect(() => {
-    if (!wasmReady) return;
-
     const img = new Image();
-    img.src = "/vite.png";
+    img.src = viteImg;
     img.onload = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -27,15 +27,46 @@ function App() {
       const context = canvas.getContext("2d");
       if (!context) return;
 
-      const scaledWidth = img.width * 0.5;
-      const scaledHeight = img.width * 0.5;
+      canvas.width = img.width * 0.5;
+      canvas.height = img.width * 0.5;
+      context.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-      canvas.width = scaledWidth;
-      canvas.height = scaledHeight;
-      context.drawImage(img, 0, 0, scaledWidth, scaledHeight);
+      // Preserve reference to original data for blurring
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      originalImageRef.current = imageData;
     };
-    // TODO: render image
-  }, [wasmReady]);
+  }, []);
+
+  // Blur image if blur changed
+  useEffect(() => {
+    if (!wasmReady) return;
+    if (!canvasRef.current) return;
+    if (!originalImageRef.current) return;
+
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+
+    const originalImagePixelBytes = new Uint8Array(
+      originalImageRef.current.data,
+    );
+    const blurredImagePixelBytes = blur(
+      originalImagePixelBytes,
+      canvas.height,
+      canvas.width,
+      blurFactor,
+    );
+
+    context.putImageData(
+      new ImageData(
+        new Uint8ClampedArray(blurredImagePixelBytes),
+        canvas.width,
+        canvas.height,
+      ),
+      0,
+      0,
+    );
+  }, [wasmReady, blurFactor]);
 
   return (
     <>
@@ -44,14 +75,14 @@ function App() {
       <Form>
         <Form.Group>
           <Row>
-            <Form.Label>Blur: {blur}</Form.Label>
+            <Form.Label>Blur: {blurFactor}</Form.Label>
           </Row>
           <Row>
             <Form.Range
-              min={0}
+              min={1}
               max={100}
-              value={blur}
-              onChange={(e) => setBlur(Number(e.target.value))}
+              value={blurFactor}
+              onChange={(e) => setBlurFactor(Number(e.target.value))}
             />
           </Row>
         </Form.Group>

@@ -5,6 +5,9 @@ let originalPixels = null;
 let width = 0;
 let height = 0;
 
+let busy = false;
+let nextBlurToProcess = 1;
+
 async function initWasm() {
   if (!wasmReady) {
     await init();
@@ -24,15 +27,27 @@ self.onmessage = async (e) => {
 
   // blurring request only receives blur factor, we apply blur to stored pixels
   if (message.type === "blur") {
-    await initWasm();
-    const blurredPixelBytes = blur(
-      originalPixels,
-      height,
-      width,
-      message.blurFactor,
-    );
-    self.postMessage({ blurred: blurredPixelBytes }, [
-      blurredPixelBytes.buffer,
-    ]);
+    nextBlurToProcess = message.blurFactor;
+    if (busy) {
+      console.log("busy, try again later")
+      return;
+    }
+
+    busy = true;
+    performBlur(nextBlurToProcess);
+    busy = false;
   }
 };
+
+async function performBlur(blurFactor) {
+  await initWasm();
+  const blurredPixelBytes = blur(
+    originalPixels,
+    height,
+    width,
+    blurFactor,
+  );
+  self.postMessage({ blurred: blurredPixelBytes }, [
+    blurredPixelBytes.buffer,
+  ]);
+}

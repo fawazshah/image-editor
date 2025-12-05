@@ -4,7 +4,7 @@ To build Rust code targetting WASM:
 
 ```
 cd rust-wasm
-wasm-pack build --target web --out-dir ../src/wasm
+wasm-pack build --dev --target web --out-dir ../src/wasm
 ```
 
 To run React + Vite application:

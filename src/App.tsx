@@ -17,12 +17,11 @@ function App() {
     img.onload = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
-
       const context = canvas.getContext("2d");
       if (!context) return;
 
-      canvas.width = img.width * 0.5;
-      canvas.height = img.height * 0.5;
+      canvas.width = img.width;
+      canvas.height = img.height;
       context.drawImage(img, 0, 0, canvas.width, canvas.height);
       const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 

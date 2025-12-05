@@ -7,6 +7,7 @@ import BlurWorker from "./workers/blurWorker?worker";
 
 function App() {
   const [blurFactor, setBlurFactor] = useState(1);
+  const blurFactorRef = useRef<number>(1);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const originalImageRef = useRef<ImageData>(null);
   const blurWorkerRef = useRef<Worker>(new BlurWorker());
@@ -41,28 +42,36 @@ function App() {
     };
   }, []);
 
-  // Blur image if blur factor changed
+  // Keep reference to latest blur factor
   useEffect(() => {
-    if (!canvasRef.current) return;
+    blurFactorRef.current = blurFactor;
+  }, [blurFactor]);
 
-    const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
-    if (!context) return;
+  useEffect(() => {
+    // debouncing - only process request after 50ms
+    const id = setTimeout(() => {
+      const blurWorker = blurWorkerRef.current;
+      blurWorker.postMessage({
+        type: "blur",
+        blurFactor: blurFactorRef.current,
+      });
 
-    const blurWorker = blurWorkerRef.current;
-    blurWorker.postMessage({
-      type: "blur",
-      blurFactor: blurFactor,
-    });
+      if (!canvasRef.current) return;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext("2d");
+      if (!context) return;
 
-    blurWorker.onmessage = (e) => {
-      const blurredImageData = new ImageData(
-        new Uint8ClampedArray(e.data.blurred),
-        canvas.width,
-        canvas.height,
-      );
-      context?.putImageData(blurredImageData, 0, 0);
-    };
+      blurWorkerRef.current.onmessage = (e) => {
+        const blurredImageData = new ImageData(
+          new Uint8ClampedArray(e.data.blurred),
+          canvas.width,
+          canvas.height,
+        );
+        context?.putImageData(blurredImageData, 0, 0);
+      };
+    }, 50);
+
+    return () => clearTimeout(id);
   }, [blurFactor]);
 
   return (

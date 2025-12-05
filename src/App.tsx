@@ -20,10 +20,17 @@ function App() {
       const context = canvas.getContext("2d");
       if (!context) return;
 
-      canvas.width = img.width;
-      canvas.height = img.height;
-      context.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      const padding = 25;
+
+      canvas.width = img.width + padding * 2;
+      canvas.height = img.height + padding * 2;
+      context.drawImage(img, 0, 0);
+      const imageData = context.getImageData(
+        -padding,
+        -padding,
+        canvas.width,
+        canvas.height,
+      );
 
       // Transfer initial image to worker for reuse
       const blurWorker = blurWorkerRef.current;

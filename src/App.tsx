@@ -1,20 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import Form from "react-bootstrap/Form";
+import { Row } from "react-bootstrap";
 import "./App.css";
 import viteImg from "./assets/vite.png";
-import init, { blur } from "./wasm/wasm.js";
-import { Row } from "react-bootstrap";
+import BlurWorker from "./workers/blurWorker?worker";
 
 function App() {
-  const [wasmReady, setWasmReady] = useState(false);
   const [blurFactor, setBlurFactor] = useState(1);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const originalImageRef = useRef<ImageData>(null);
-
-  // Initialise WASM on initial render
-  useEffect(() => {
-    init().then(() => setWasmReady(true));
-  }, []);
+  const blurWorkerRef = useRef<Worker>(new BlurWorker());
 
   // Render image
   useEffect(() => {
@@ -39,7 +34,6 @@ function App() {
 
   // Blur image if blur factor changed
   useEffect(() => {
-    if (!wasmReady) return;
     if (!canvasRef.current) return;
     if (!originalImageRef.current) return;
 
@@ -47,26 +41,28 @@ function App() {
     const context = canvas.getContext("2d");
     if (!context) return;
 
-    const originalImagePixelBytes = new Uint8Array(
-      originalImageRef.current.data,
-    );
-    const blurredImagePixelBytes = blur(
-      originalImagePixelBytes,
-      canvas.height,
-      canvas.width,
-      blurFactor,
+    const originalImageCopy = originalImageRef.current.data.slice();
+
+    const blurWorker = blurWorkerRef.current;
+    blurWorker.postMessage(
+      {
+        pixelBytes: originalImageCopy,
+        width: canvas.width,
+        height: canvas.height,
+        blurFactor: blurFactor,
+      },
+      [originalImageCopy.buffer], // buffer transferred to worker
     );
 
-    context.putImageData(
-      new ImageData(
-        new Uint8ClampedArray(blurredImagePixelBytes),
+    blurWorker.onmessage = (e) => {
+      const blurredImageData = new ImageData(
+        new Uint8ClampedArray(e.data.blurred),
         canvas.width,
         canvas.height,
-      ),
-      0,
-      0,
-    );
-  }, [wasmReady, blurFactor]);
+      );
+      context?.putImageData(blurredImageData, 0, 0);
+    };
+  }, [blurFactor]);
 
   return (
     <>

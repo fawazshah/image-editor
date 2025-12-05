@@ -24,9 +24,6 @@ self.onmessage = async (e) => {
 
   // blurring request only receives blur factor, we apply blur to stored pixels
   if (message.type === "blur") {
-    if (!originalPixels) return;
-    if (!height) return;
-    if (!width) return;
     await initWasm();
     const blurredPixelBytes = blur(
       originalPixels,

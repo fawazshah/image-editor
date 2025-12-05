@@ -29,30 +29,31 @@ function App() {
       // Preserve reference to original data for blurring
       const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
       originalImageRef.current = imageData;
+
+      // Transfer initial image to worker for reuse
+      const blurWorker = blurWorkerRef.current;
+      blurWorker.postMessage({
+        type: "init",
+        pixelBytes: originalImageRef.current.data.slice(),
+        width: canvas.width,
+        height: canvas.height,
+      });
     };
   }, []);
 
   // Blur image if blur factor changed
   useEffect(() => {
     if (!canvasRef.current) return;
-    if (!originalImageRef.current) return;
 
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
     if (!context) return;
 
-    const originalImageCopy = originalImageRef.current.data.slice();
-
     const blurWorker = blurWorkerRef.current;
-    blurWorker.postMessage(
-      {
-        pixelBytes: originalImageCopy,
-        width: canvas.width,
-        height: canvas.height,
-        blurFactor: blurFactor,
-      },
-      [originalImageCopy.buffer], // buffer transferred to worker
-    );
+    blurWorker.postMessage({
+      type: "blur",
+      blurFactor: blurFactor,
+    });
 
     blurWorker.onmessage = (e) => {
       const blurredImageData = new ImageData(

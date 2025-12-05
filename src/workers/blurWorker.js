@@ -1,6 +1,9 @@
 import init, { blur } from "../wasm/wasm.js";
 
 let wasmReady = false;
+let originalPixels = null;
+let width = 0;
+let height = 0;
 
 async function initWasm() {
   if (!wasmReady) {
@@ -10,12 +13,29 @@ async function initWasm() {
 }
 
 self.onmessage = async (e) => {
-  const { pixelBytes, width, height, blurFactor } = e.data;
+  const message = e.data;
 
-  await initWasm();
-  const blurredPixelBytes = blur(pixelBytes, height, width, blurFactor);
-  const blurredPixelBytesCopy = blurredPixelBytes.slice();
-  self.postMessage({ blurred: blurredPixelBytesCopy }, [
-    blurredPixelBytesCopy.buffer,
-  ]);
+  // pixels received by worker on initial message only
+  if (message.type === "init") {
+    originalPixels = message.pixelBytes;
+    width = message.width;
+    height = message.height;
+  }
+
+  // blurring request only receives blur factor, we apply blur to stored pixels
+  if (message.type === "blur") {
+    if (!originalPixels) return;
+    if (!height) return;
+    if (!width) return;
+    await initWasm();
+    const blurredPixelBytes = blur(
+      originalPixels,
+      height,
+      width,
+      message.blurFactor,
+    );
+    self.postMessage({ blurred: blurredPixelBytes }, [
+      blurredPixelBytes.buffer,
+    ]);
+  }
 };

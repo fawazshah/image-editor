@@ -9,7 +9,6 @@ function App() {
   const [blurFactor, setBlurFactor] = useState(1);
   const blurFactorRef = useRef<number>(1);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const originalImageRef = useRef<ImageData>(null);
   const blurWorkerRef = useRef<Worker>(new BlurWorker());
 
   // Render image
@@ -26,16 +25,13 @@ function App() {
       canvas.width = img.width * 0.5;
       canvas.height = img.height * 0.5;
       context.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-      // Preserve reference to original data for blurring
       const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-      originalImageRef.current = imageData;
 
       // Transfer initial image to worker for reuse
       const blurWorker = blurWorkerRef.current;
       blurWorker.postMessage({
         type: "init",
-        pixelBytes: originalImageRef.current.data.slice(),
+        pixelBytes: imageData.data.slice(),
         width: canvas.width,
         height: canvas.height,
       });

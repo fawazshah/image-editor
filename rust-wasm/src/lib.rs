@@ -11,7 +11,7 @@ fn start() {
 /// Returns a vector of bytes that is transferred in ownership back to JS.
 #[wasm_bindgen]
 pub fn blur(pixel_bytes: &[u8], height: u32, width: u32, blur: u32) -> Vec<u8> {
-    let blur_sigma: f32 = blur as f32 / 10.0;
+    let blur_sigma: f32 = blur as f32 / 5.0;
     let img: DynamicImage = DynamicImage::ImageRgba8(
         ImageBuffer::<Rgba<u8>, _>::from_raw(width, height, pixel_bytes.to_vec())
             .expect("Invalid dimensions"),

@@ -1,4 +1,4 @@
-import init, { blur } from "../wasm/wasm.js";
+import init, { library_blur, blur } from "../wasm/wasm.js";
 
 let wasmReady = false;
 let originalPixels = null;
@@ -30,6 +30,6 @@ self.onmessage = async (e) => {
 
 async function performBlur(blurFactor) {
   await initWasm();
-  const blurredPixelBytes = blur(originalPixels, height, width, blurFactor);
+  const blurredPixelBytes = library_blur(originalPixels, height, width, blurFactor);
   self.postMessage({ blurred: blurredPixelBytes }, [blurredPixelBytes.buffer]);
 }

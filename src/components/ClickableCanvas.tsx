@@ -7,6 +7,8 @@ export type ClickableCanvasProps = {
   onImageChange: () => void;
 };
 
+const PADDING = 40;
+
 export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
   props: ClickableCanvasProps,
 ) => {
@@ -22,11 +24,9 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
       const context = canvas.getContext("2d");
       if (!context) return;
 
-      const padding = 40;
-
-      canvas.width = img.width + padding * 2;
-      canvas.height = img.height + padding * 2;
-      context.drawImage(img, padding, padding);
+      canvas.width = img.width + PADDING * 2;
+      canvas.height = img.height + PADDING * 2;
+      context.drawImage(img, PADDING, PADDING);
       const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
       // Transfer initial image to worker for reuse

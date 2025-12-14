@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useCallback } from "react";
 import BlurWorker from "../workers/blurWorker?worker";
+import { StyledClickableCanvas, StyledButton } from "./StyledClickableCanvas";
 
 export type ClickableCanvasProps = {
   initialImageUrl: string;
@@ -94,8 +95,22 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
     };
   }, [props.blurFactor]);
 
+  const handleExport = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const dataUrl = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = "image.png";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, []);
+
   return (
-    <div>
+    <StyledClickableCanvas>
       {/* Hidden file input */}
       <input
         ref={inputRef}
@@ -111,6 +126,8 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
         onClick={handleCanvasClick}
         style={{ cursor: "pointer" }}
       />
-    </div>
+
+      <StyledButton onClick={() => handleExport()}>Export</StyledButton>
+    </StyledClickableCanvas>
   );
 };

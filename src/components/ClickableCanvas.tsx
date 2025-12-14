@@ -6,7 +6,6 @@ export type ClickableCanvasProps = {
   initialImageUrl: string;
   blurFactor: number;
   onImageChange: () => void;
-  className?: string;
 };
 
 const PADDING = 40;

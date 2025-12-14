@@ -30,6 +30,11 @@ self.onmessage = async (e) => {
 
 async function performBlur(blurFactor) {
   await initWasm();
-  const blurredPixelBytes = library_blur(originalPixels, height, width, blurFactor);
+  const blurredPixelBytes = library_blur(
+    originalPixels,
+    height,
+    width,
+    blurFactor,
+  );
   self.postMessage({ blurred: blurredPixelBytes }, [blurredPixelBytes.buffer]);
 }

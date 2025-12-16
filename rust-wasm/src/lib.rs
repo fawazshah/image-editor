@@ -139,20 +139,21 @@ pub fn library_blur(pixel_bytes: &[u8], height: u32, width: u32, blur: u32) -> V
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
-    #[test]
-    fn gaussian_kernel_creates_symmetric_kernel() {
-        // Arrange
-
+    #[rstest]
+    #[case(3, 2.0, vec![0.07015932, 0.13107488, 0.19071281, 0.21610592, 0.19071281, 0.13107488, 0.07015932])]
+    #[case(3, 1.0, vec![0.004433048, 0.05400558, 0.24203622, 0.39905027, 0.24203622, 0.05400558, 0.004433048])]
+    #[case(4, 2.0, vec![0.027630549, 0.06628224, 0.12383153, 0.18017381, 0.20416369, 0.18017381, 0.12383153, 0.06628224, 0.027630549])]
+    fn gaussian_kernel_creates_correct_kernel(
+        #[case] radius: usize,
+        #[case] sigma: f32,
+        #[case] expected_kernel: Vec<f32>,
+    ) {
         // Act
-        let kernel: Vec<f32> = gaussian_kernel(3, 2.0);
+        let kernel: Vec<f32> = gaussian_kernel(radius, sigma);
 
         // Assert
-        assert_eq!(
-            kernel,
-            vec![
-                0.07015932, 0.13107488, 0.19071281, 0.21610592, 0.19071281, 0.13107488, 0.07015932,
-            ]
-        );
+        assert_eq!(kernel, expected_kernel);
     }
 }

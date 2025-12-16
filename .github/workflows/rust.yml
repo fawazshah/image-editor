@@ -18,9 +18,11 @@ jobs:
         working-directory: rust-wasm
 
     steps:
-    - name: Checkout code
-    - uses: actions/checkout@v4
-    - name: Run clippy
-      run: cargo clippy --all-targets --all-features -- -D warnings
-    - name: Run tests
-      run: cargo test --verbose
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Run tests
+        run: cargo test --verbose

@@ -6,7 +6,7 @@ const NUM_CHANNELS: u32 = 4;
 /// Blurs an input image, given in bytes, by a blur factor. Blur factor must be
 /// between 0 and 100. Returns a vector of bytes that is transferred in ownership back to JS.
 #[wasm_bindgen]
-pub fn blur(original_image: &[u8], height: u32, width: u32, blur: u32) -> Vec<u8> {
+pub fn gaussian_blur(original_image: &[u8], height: u32, width: u32, blur: u32) -> Vec<u8> {
     let blur_sigma: f32 = blur as f32 / 5.0;
     let radius: usize = (blur_sigma * 3.0).ceil() as usize;
     let kernel: Vec<f32> = gaussian_kernel(radius, blur_sigma);
@@ -117,7 +117,7 @@ fn gaussian_kernel(radius: usize, sigma: f32) -> Vec<f32> {
 /// Blurs an input image, given in bytes, by a blur factor. Uses blur method from img crate.
 /// Blur factor must be between 0 and 100. Returns a vector of bytes that is transferred in ownership back to JS.
 #[wasm_bindgen]
-pub fn library_blur(pixel_bytes: &[u8], height: u32, width: u32, blur: u32) -> Vec<u8> {
+pub fn library_gaussian_blur(pixel_bytes: &[u8], height: u32, width: u32, blur: u32) -> Vec<u8> {
     let blur_sigma: f32 = blur as f32 / 5.0;
     let img: DynamicImage = DynamicImage::ImageRgba8(
         ImageBuffer::<Rgba<u8>, _>::from_raw(width, height, pixel_bytes.to_vec())

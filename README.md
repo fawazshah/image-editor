@@ -16,5 +16,5 @@ npm run dev
 To view documentation for the Rust code:
 
 ```
-cargo doc --open
+cargo doc --no-deps --open
 ```

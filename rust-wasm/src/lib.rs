@@ -30,6 +30,7 @@ fn vertical_pass(
     width: u32,
     radius: usize,
 ) -> Vec<u8> {
+    let x = 4;
     let mut output: Vec<u8> = vec![0; original.len()];
 
     for x in 0..width {

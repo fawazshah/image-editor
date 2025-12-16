@@ -1,6 +1,7 @@
 use wasm_bindgen::prelude::wasm_bindgen;
 
-pub mod gaussian_blur;
+pub mod blurring;
+pub mod edge_detection;
 
 #[wasm_bindgen(start)]
 fn start() {

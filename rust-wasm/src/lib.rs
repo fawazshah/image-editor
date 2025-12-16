@@ -3,6 +3,8 @@ use wasm_bindgen::prelude::wasm_bindgen;
 pub mod blurring;
 pub mod edge_detection;
 
+const NUM_CHANNELS: usize = 4;
+
 #[wasm_bindgen(start)]
 fn start() {
     // Allows displaying real Rust error message in browser console, instead of placeholder error

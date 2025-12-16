@@ -1,12 +1,12 @@
 use image::{DynamicImage, ImageBuffer, Rgba};
 use wasm_bindgen::prelude::wasm_bindgen;
 
-const NUM_CHANNELS: u32 = 4;
+use crate::NUM_CHANNELS;
 
 /// Blurs an input image, given in bytes, by a blur factor. Blur factor must be
 /// between 0 and 100. Returns a vector of bytes that is transferred in ownership back to JS.
 #[wasm_bindgen]
-pub fn gaussian_blur(original_image: &[u8], height: u32, width: u32, blur: u32) -> Vec<u8> {
+pub fn gaussian_blur(original_image: &[u8], height: usize, width: usize, blur: u32) -> Vec<u8> {
     let blur_sigma: f32 = blur as f32 / 5.0;
     let radius: usize = (blur_sigma * 3.0).ceil() as usize;
     let kernel: Vec<f32> = gaussian_kernel(radius, blur_sigma);
@@ -20,8 +20,8 @@ pub fn gaussian_blur(original_image: &[u8], height: u32, width: u32, blur: u32) 
 fn vertical_pass(
     original: &[u8],
     kernel: &[f32],
-    height: u32,
-    width: u32,
+    height: usize,
+    width: usize,
     radius: usize,
 ) -> Vec<u8> {
     let mut output: Vec<u8> = vec![0; original.len()];
@@ -34,9 +34,9 @@ fn vertical_pass(
             let mut a: f32 = 0.0;
 
             for (k, kernel_value) in kernel.iter().enumerate() {
-                let offset: u32 = (k - radius) as u32;
-                let y_to_convolve: u32 = (y + offset).clamp(0, height - 1);
-                let idx_to_convolve: usize = ((y_to_convolve * width + x) * NUM_CHANNELS) as usize;
+                let offset: usize = k - radius;
+                let y_to_convolve: usize = (y + offset).clamp(0, height - 1);
+                let idx_to_convolve: usize = (y_to_convolve * width + x) * NUM_CHANNELS;
 
                 r += original[idx_to_convolve] as f32 * kernel_value;
                 g += original[idx_to_convolve + 1] as f32 * kernel_value;
@@ -44,7 +44,7 @@ fn vertical_pass(
                 a += original[idx_to_convolve + 3] as f32 * kernel_value;
             }
 
-            let idx_to_update: usize = ((y * width + x) * NUM_CHANNELS) as usize;
+            let idx_to_update: usize = (y * width + x) * NUM_CHANNELS;
 
             output[idx_to_update] = r as u8;
             output[idx_to_update + 1] = g as u8;
@@ -59,8 +59,8 @@ fn vertical_pass(
 fn horizontal_pass(
     original: &[u8],
     kernel: &[f32],
-    height: u32,
-    width: u32,
+    height: usize,
+    width: usize,
     radius: usize,
 ) -> Vec<u8> {
     let mut output: Vec<u8> = vec![0; original.len()];
@@ -73,9 +73,9 @@ fn horizontal_pass(
             let mut a: f32 = 0.0;
 
             for (k, kernel_value) in kernel.iter().enumerate() {
-                let offset: u32 = (k - radius) as u32;
-                let x_to_convolve: u32 = (x + offset).clamp(0, width - 1);
-                let idx_to_convolve: usize = ((y * width + x_to_convolve) * NUM_CHANNELS) as usize;
+                let offset: usize = k - radius;
+                let x_to_convolve: usize = (x + offset).clamp(0, width - 1);
+                let idx_to_convolve: usize = (y * width + x_to_convolve) * NUM_CHANNELS;
 
                 r += original[idx_to_convolve] as f32 * kernel_value;
                 g += original[idx_to_convolve + 1] as f32 * kernel_value;
@@ -83,7 +83,7 @@ fn horizontal_pass(
                 a += original[idx_to_convolve + 3] as f32 * kernel_value;
             }
 
-            let idx_to_update: usize = ((y * width + x) * NUM_CHANNELS) as usize;
+            let idx_to_update: usize = (y * width + x) * NUM_CHANNELS;
 
             output[idx_to_update] = r as u8;
             output[idx_to_update + 1] = g as u8;
@@ -117,10 +117,10 @@ fn gaussian_kernel(radius: usize, sigma: f32) -> Vec<f32> {
 /// Blurs an input image, given in bytes, by a blur factor. Uses blur method from img crate.
 /// Blur factor must be between 0 and 100. Returns a vector of bytes that is transferred in ownership back to JS.
 #[wasm_bindgen]
-pub fn library_gaussian_blur(pixel_bytes: &[u8], height: u32, width: u32, blur: u32) -> Vec<u8> {
+pub fn library_gaussian_blur(pixel_bytes: &[u8], height: usize, width: usize, blur: u32) -> Vec<u8> {
     let blur_sigma: f32 = blur as f32 / 5.0;
     let img: DynamicImage = DynamicImage::ImageRgba8(
-        ImageBuffer::<Rgba<u8>, _>::from_raw(width, height, pixel_bytes.to_vec())
+        ImageBuffer::<Rgba<u8>, _>::from_raw(width as u32, height as u32, pixel_bytes.to_vec())
             .expect("Invalid dimensions"),
     );
 

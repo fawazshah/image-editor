@@ -10,16 +10,19 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  ci:
+    name: ci
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: rust-wasm
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Clippy
-      run: cargo clippy --all-targets --all-features -- -D warnings
-    - name: Run tests
-      run: cargo test --verbose
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Run tests
+        run: cargo test --verbose

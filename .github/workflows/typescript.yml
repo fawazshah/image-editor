@@ -7,9 +7,10 @@ on:
     branches: [ "main" ]
 
 jobs:
-  typescript:
-    name: eslint
+  ci:
+    name: ci
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

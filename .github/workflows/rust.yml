@@ -10,7 +10,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  clippy + test:
+  rust:
     name: clippy + test
     runs-on: ubuntu-latest
     defaults:

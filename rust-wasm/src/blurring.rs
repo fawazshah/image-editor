@@ -9,7 +9,7 @@ use crate::NUM_CHANNELS;
 pub fn gaussian_blur(original_image: &[u8], height: usize, width: usize, blur: u32) -> Vec<u8> {
     let blur_sigma: f32 = blur as f32 / 5.0;
     let radius: usize = (blur_sigma * 3.0).ceil() as usize;
-    let kernel: Vec<f32> = gaussian_kernel(radius, blur_sigma);
+    let kernel: Vec<f32> = one_d_gaussian_kernel(radius, blur_sigma);
 
     let temp_image: Vec<u8> = horizontal_pass(original_image, &kernel, height, width, radius);
     let output_image: Vec<u8> = vertical_pass(&temp_image, &kernel, height, width, radius);
@@ -95,7 +95,7 @@ fn horizontal_pass(
     output
 }
 
-fn gaussian_kernel(radius: usize, sigma: f32) -> Vec<f32> {
+fn one_d_gaussian_kernel(radius: usize, sigma: f32) -> Vec<f32> {
     let size: usize = 2 * radius + 1;
     let mut kernel: Vec<f32> = vec![0.0; size];
     let two_sigma_squared: f32 = 2.0 * sigma * sigma;
@@ -150,7 +150,7 @@ mod tests {
         #[case] expected_kernel: Vec<f32>,
     ) {
         // Act
-        let kernel: Vec<f32> = gaussian_kernel(radius, sigma);
+        let kernel: Vec<f32> = one_d_gaussian_kernel(radius, sigma);
 
         // Assert
         assert_eq!(kernel, expected_kernel);

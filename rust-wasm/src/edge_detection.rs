@@ -4,11 +4,42 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::NUM_CHANNELS;
 
-fn sobel_kernel_x() -> Vec<Vec<i8>> {
+#[wasm_bindgen]
+pub fn sobel_edge_detect(original_image: &[u8], height: usize, width: usize) -> Vec<u8> {
+    let sobel_x: Vec<Vec<i32>> = sobel_kernel_x();
+    let sobel_y: Vec<Vec<i32>> = sobel_kernel_y();
+    let greyscale: Vec<u8> = convert_to_greyscale(original_image, height, width);
+    let mut output: Vec<u8> = vec![0u8; (width - 1) * (height - 1) * NUM_CHANNELS];
+
+    for x in 1..width - 1 {
+        for y in 1..height - 1 {
+            let idx = |x: usize, y: usize| greyscale[x * width + y] as i32;
+            let convolve = |x: usize, y: usize, kernel: &[Vec<i32>]| {
+                kernel[0][0] * idx(x - 1, y - 1)
+                    + kernel[0][1] * idx(x - 1, y)
+                    + kernel[0][2] * idx(x - 1, y + 1)
+                    + kernel[1][0] * idx(x, y - 1)
+                    + kernel[1][1] * idx(x, y)
+                    + kernel[1][2] * idx(x, y + 1)
+                    + kernel[2][0] * idx(x + 1, y - 1)
+                    + kernel[2][1] * idx(x + 1, y)
+            };
+
+            let g_x: i32 = convolve(x, y, &sobel_x);
+            let g_y: i32 = convolve(x, y, &sobel_y);
+            let magnitude: u8 = ((g_x * g_x * g_y * g_y) as f64).sqrt() as u8;
+            output[(x * width + y) * NUM_CHANNELS] = magnitude
+        }
+    }
+
+    output
+}
+
+fn sobel_kernel_x() -> Vec<Vec<i32>> {
     vec![vec![-1, 0, 1], vec![-2, 0, 2], vec![-1, 0, 1]]
 }
 
-fn sobel_kernel_y() -> Vec<Vec<i8>> {
+fn sobel_kernel_y() -> Vec<Vec<i32>> {
     vec![vec![-1, -2, -1], vec![0, 0, 0], vec![1, 2, 1]]
 }
 
@@ -40,7 +71,7 @@ mod tests {
     #[test]
     fn sobel_x_creates_correct_kernel() {
         // Act
-        let sobel_x: Vec<Vec<i8>> = sobel_kernel_x();
+        let sobel_x: Vec<Vec<i32>> = sobel_kernel_x();
 
         // Assert
         assert_eq!(
@@ -52,7 +83,7 @@ mod tests {
     #[test]
     fn sobel_y_creates_correct_kernel() {
         // Act
-        let sobel_x: Vec<Vec<i8>> = sobel_kernel_y();
+        let sobel_x: Vec<Vec<i32>> = sobel_kernel_y();
 
         // Assert
         assert_eq!(
@@ -76,7 +107,7 @@ mod tests {
         const HEIGHT: usize = 5;
 
         // Act
-        let greyscale: Vec<u8> = convert_to_greyscale(&input, HEIGHT, WIDTH);
+        let greyscale = convert_to_greyscale(&input, HEIGHT, WIDTH);
 
         // Assert
         assert_eq!(greyscale, vec![0, 76, 149, 29, 255]);

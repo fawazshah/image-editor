@@ -32,8 +32,8 @@ async function performBlur(blurFactor) {
   await initWasm();
   const blurredPixelBytes = library_gaussian_blur(
     originalPixels,
-    height,
     width,
+    height,
     blurFactor,
   );
   self.postMessage({ blurred: blurredPixelBytes }, [blurredPixelBytes.buffer]);

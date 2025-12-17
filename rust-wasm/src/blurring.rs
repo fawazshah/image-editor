@@ -6,13 +6,13 @@ use crate::NUM_CHANNELS;
 /// Blurs an input image, given in bytes, by a blur factor. Blur factor must be
 /// between 0 and 100. Returns a vector of bytes that is transferred in ownership back to JS.
 #[wasm_bindgen]
-pub fn gaussian_blur(original_image: &[u8], height: usize, width: usize, blur: u32) -> Vec<u8> {
+pub fn gaussian_blur(original_image: &[u8], width: usize, height: usize, blur: u32) -> Vec<u8> {
     let blur_sigma: f32 = blur as f32 / 5.0;
     let radius: usize = (blur_sigma * 3.0).ceil() as usize;
     let kernel: Vec<f32> = one_d_gaussian_kernel(radius, blur_sigma);
 
-    let temp_image: Vec<u8> = horizontal_pass(original_image, &kernel, height, width, radius);
-    let output_image: Vec<u8> = vertical_pass(&temp_image, &kernel, height, width, radius);
+    let temp_image: Vec<u8> = horizontal_pass(original_image, &kernel, width, height, radius);
+    let output_image: Vec<u8> = vertical_pass(&temp_image, &kernel, width, height, radius);
 
     output_image
 }
@@ -20,8 +20,8 @@ pub fn gaussian_blur(original_image: &[u8], height: usize, width: usize, blur: u
 fn vertical_pass(
     original: &[u8],
     kernel: &[f32],
-    height: usize,
     width: usize,
+    height: usize,
     radius: usize,
 ) -> Vec<u8> {
     let mut output: Vec<u8> = vec![0; original.len()];
@@ -59,8 +59,8 @@ fn vertical_pass(
 fn horizontal_pass(
     original: &[u8],
     kernel: &[f32],
-    height: usize,
     width: usize,
+    height: usize,
     radius: usize,
 ) -> Vec<u8> {
     let mut output: Vec<u8> = vec![0; original.len()];
@@ -119,8 +119,8 @@ fn one_d_gaussian_kernel(radius: usize, sigma: f32) -> Vec<f32> {
 #[wasm_bindgen]
 pub fn library_gaussian_blur(
     pixel_bytes: &[u8],
-    height: usize,
     width: usize,
+    height: usize,
     blur: u32,
 ) -> Vec<u8> {
     let blur_sigma: f32 = blur as f32 / 5.0;

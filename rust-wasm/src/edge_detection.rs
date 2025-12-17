@@ -9,7 +9,9 @@ pub fn sobel_edge_detect(original_image: &[u8], height: usize, width: usize) -> 
     let sobel_x: Vec<Vec<i32>> = sobel_kernel_x();
     let sobel_y: Vec<Vec<i32>> = sobel_kernel_y();
     let greyscale: Vec<u8> = convert_to_greyscale(original_image, height, width);
-    let mut output: Vec<u8> = vec![0u8; (width - 1) * (height - 1) * NUM_CHANNELS];
+
+    // due to 3x3 convolution, output image will be 1 pixel smaller on each side
+    let mut output: Vec<u8> = vec![0u8; (width - 2) * (height - 2) * NUM_CHANNELS];
 
     for x in 1..width - 1 {
         for y in 1..height - 1 {

@@ -25,6 +25,7 @@ pub fn sobel_edge_detect(original_image: &[u8], height: usize, width: usize) -> 
                     + kernel[1][2] * idx(x, y + 1)
                     + kernel[2][0] * idx(x + 1, y - 1)
                     + kernel[2][1] * idx(x + 1, y)
+                    + kernel[2][2] * idx(x + 1, y + 1)
             };
 
             let g_x: i32 = convolve(x, y, &sobel_x);

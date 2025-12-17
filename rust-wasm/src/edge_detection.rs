@@ -5,10 +5,10 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use crate::NUM_CHANNELS;
 
 #[wasm_bindgen]
-pub fn sobel_edge_detect(original_image: &[u8], height: usize, width: usize) -> Vec<u8> {
+pub fn sobel_edge_detect(original_image: &[u8], width: usize, height: usize) -> Vec<u8> {
     let sobel_x: Vec<Vec<i32>> = sobel_kernel_x();
     let sobel_y: Vec<Vec<i32>> = sobel_kernel_y();
-    let greyscale: Vec<u8> = convert_to_greyscale(original_image, height, width);
+    let greyscale: Vec<u8> = convert_to_greyscale(original_image, width, height);
 
     // due to 3x3 convolution, output image will be 1 pixel smaller on each side
     let mut output: Vec<u8> = vec![0u8; (width - 2) * (height - 2) * NUM_CHANNELS];
@@ -46,7 +46,7 @@ fn sobel_kernel_y() -> Vec<Vec<i32>> {
     vec![vec![-1, -2, -1], vec![0, 0, 0], vec![1, 2, 1]]
 }
 
-fn convert_to_greyscale(original_image: &[u8], height: usize, width: usize) -> Vec<u8> {
+fn convert_to_greyscale(original_image: &[u8], width: usize, height: usize) -> Vec<u8> {
     let weighting: HashMap<&str, u32> = HashMap::from([("r", 299), ("g", 587), ("b", 114)]); // greyscale conversion needs a specific weighting per colour
 
     let mut greyscale: Vec<u8> = vec![0u8; width * height]; // greyscale only has 1 channel rather than 4
@@ -110,7 +110,7 @@ mod tests {
         const HEIGHT: usize = 5;
 
         // Act
-        let greyscale = convert_to_greyscale(&input, HEIGHT, WIDTH);
+        let greyscale = convert_to_greyscale(&input, WIDTH, HEIGHT);
 
         // Assert
         assert_eq!(greyscale, vec![0, 76, 149, 29, 255]);

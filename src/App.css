@@ -42,3 +42,14 @@
 .read-the-docs {
   color: #888;
 }
+
+.form {
+  width: 15em;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+}
+
+.form-item {
+  margin: 1em;
+}

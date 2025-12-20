@@ -57,9 +57,6 @@ async function performEdgeDetect() {
   await initWasm();
   if (originalPixels == null) return;
   const outputBytes = sobel_edge_detect(originalPixels, width, height);
-  // let extra = new Array(7456).fill(0)
-  // let final = [...outputBytes, ...extra]
-  // console.log(final)
   self.postMessage({ output: outputBytes }, [outputBytes.buffer]);
 }
 

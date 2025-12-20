@@ -6,12 +6,14 @@ import { ClickableCanvas } from "./components/ClickableCanvas";
 
 function App() {
   const [blurFactor, setBlurFactor] = useState(1);
+  const [edgeDetection, setEdgeDetection] = useState<boolean | null>(null);
 
   return (
     <>
       <ClickableCanvas
         initialImageUrl={viteImg}
         blurFactor={blurFactor}
+        edgeDetection={edgeDetection}
         onImageChange={() => setBlurFactor(1)}
       />
       <h1>Image Editor</h1>
@@ -28,8 +30,14 @@ function App() {
         <div className="form-item">
           <Form.Switch
             label="Detect Edges"
-            onClick={() => {
-              setBlurFactor(1);
+            onChange={(e) => {
+              const checked = e.target.checked;
+              if (checked) {
+                setBlurFactor(1);
+                setEdgeDetection(true);
+              } else {
+                setEdgeDetection(false);
+              }
             }}
           />
         </div>

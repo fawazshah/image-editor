@@ -6,14 +6,15 @@ use crate::NUM_CHANNELS;
 
 #[wasm_bindgen]
 /// Runs Sobel edge detection algorithm with a 3x3 kernel. Input must be greater than 3x3.
+/// Pads outer layer with 0s.
 pub fn sobel_edge_detect(original_image: &[u8], width: usize, height: usize) -> Vec<u8> {
     let sobel_x: Vec<Vec<i32>> = sobel_kernel_x();
     let sobel_y: Vec<Vec<i32>> = sobel_kernel_y();
     let greyscale: Vec<u8> = convert_to_greyscale(original_image, width, height);
 
-    // due to 3x3 convolution, output image will be 1 pixel smaller on each side
-    let mut output: Vec<u8> = vec![0u8; (width - 2) * (height - 2)];
+    let mut output: Vec<u8> = vec![0u8; width * height];
 
+    // due to 3x3 convolution, we can only process from (1, 1) to (width - 2, height - 2)
     for x in 1..width - 1 {
         for y in 1..height - 1 {
             let greyscale_idx = |x: usize, y: usize| greyscale[y * width + x] as i32;
@@ -33,8 +34,7 @@ pub fn sobel_edge_detect(original_image: &[u8], width: usize, height: usize) -> 
             let g_y: i32 = convolve(x, y, &sobel_y);
             let magnitude: u8 = ((g_x * g_x + g_y * g_y) as f64).sqrt() as u8;
 
-            // x and y start from 1, so coordinates of output image start from (x-1, y-1)
-            let output_idx: usize = (y - 1) * (width - 2) + (x - 1);
+            let output_idx: usize = y * width + x;
             output[output_idx] = magnitude;
         }
     }
@@ -90,6 +90,7 @@ fn convert_to_rgba(input: &[u8]) -> Vec<u8> {
 }
 
 #[cfg(test)]
+#[rustfmt::skip]
 mod tests {
     use super::*;
 
@@ -190,14 +191,19 @@ mod tests {
 
         // Assert
 
-        // white white black
-        // white white black
-        // white white black
+        // black black black black black
+        // black white white black black
+        // black white white black black 
+        // black white white black black
+        // black black black black black
         assert_eq!(
             output,
             vec![
-                255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255,
-                255, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255,
+                0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255,
+                0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 0, 0, 0, 255,  
+                0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 0, 0, 0, 255,  
+                0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 0, 0, 0, 255,
+                0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255,
             ]
         )
     }
@@ -227,14 +233,19 @@ mod tests {
 
         // Assert
 
-        // white white white
-        // white white white
-        // black black black
+        // black black black black black
+        // black white white white black
+        // black white white white black
+        // black black black black black
+        // black black black black black
         assert_eq!(
             output,
             vec![
-                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-                255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255,
+                0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255,
+                0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255,
+                0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255,
+                0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255,
+                0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255,
             ]
         )
     }
@@ -265,14 +276,19 @@ mod tests {
 
         // Assert
 
-        // grey grey black
-        // grey grey black
-        // grey grey black
+        // black black black black black
+        // black grey grey black black
+        // black grey grey black black
+        // black grey grey black black
+        // black black black black black
         assert_eq!(
             output,
             vec![
-                148, 148, 148, 255, 148, 148, 148, 255, 0, 0, 0, 255, 148, 148, 148, 255, 148, 148,
-                148, 255, 0, 0, 0, 255, 148, 148, 148, 255, 148, 148, 148, 255, 0, 0, 0, 255,
+                0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255,
+                0, 0, 0, 255, 148, 148, 148, 255, 148, 148, 148, 255, 0, 0, 0, 255, 0, 0, 0, 255,
+                0, 0, 0, 255, 148, 148, 148, 255, 148, 148, 148, 255, 0, 0, 0, 255, 0, 0, 0, 255,
+                0, 0, 0, 255, 148, 148, 148, 255, 148, 148, 148, 255, 0, 0, 0, 255, 0, 0, 0, 255,
+                0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255,
             ]
         )
     }

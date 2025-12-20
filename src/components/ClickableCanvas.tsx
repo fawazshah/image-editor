@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useCallback } from "react";
-import BlurWorker from "../workers/blurWorker?worker";
+import ImageWorker from "../workers/imageWorker?worker";
 import { StyledClickableCanvas, StyledButton } from "./StyledClickableCanvas";
 
 export type ClickableCanvasProps = {
   initialImageUrl: string;
   blurFactor: number;
+  edgeDetection: boolean | null;
   onImageChange: () => void;
 };
 
@@ -15,7 +16,7 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
 ) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const blurWorkerRef = useRef<Worker>(new BlurWorker());
+  const imageWorkerRef = useRef<Worker>(new ImageWorker());
 
   // Draw image on canvas, and transfer to web worker
   const renderImage = useCallback((img: HTMLImageElement) => {
@@ -31,8 +32,8 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
       const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
       // Transfer initial image to worker for reuse
-      const blurWorker = blurWorkerRef.current;
-      blurWorker.postMessage({
+      const imageWorker = imageWorkerRef.current;
+      imageWorker.postMessage({
         type: "init",
         pixelBytes: imageData.data.slice(),
         width: canvas.width,
@@ -74,8 +75,8 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
 
   // Blur image if blur factor changed
   useEffect(() => {
-    const blurWorker = blurWorkerRef.current;
-    blurWorker.postMessage({
+    const imageWorker = imageWorkerRef.current;
+    imageWorker.postMessage({
       type: "blur",
       blurFactor: props.blurFactor,
     });
@@ -85,15 +86,45 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
     const context = canvas.getContext("2d");
     if (!context) return;
 
-    blurWorkerRef.current.onmessage = (e) => {
+    imageWorker.onmessage = (e) => {
       const blurredImageData = new ImageData(
-        new Uint8ClampedArray(e.data.blurred),
+        new Uint8ClampedArray(e.data.output),
         canvas.width,
         canvas.height,
       );
       context?.putImageData(blurredImageData, 0, 0);
     };
   }, [props.blurFactor]);
+
+  // Display edge detected image or original, depending on edge detection setting
+  useEffect(() => {
+    const imageWorker = imageWorkerRef.current;
+    if (props.edgeDetection == null) return;
+
+    if (props.edgeDetection) {
+      imageWorker.postMessage({
+        type: "edgeDetect",
+      });
+    } else {
+      imageWorker.postMessage({
+        type: "resetOriginalImage",
+      });
+    }
+
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+
+    imageWorker.onmessage = (e) => {
+      const outputImageData = new ImageData(
+        new Uint8ClampedArray(e.data.output),
+        canvas.width,
+        canvas.height,
+      );
+      context?.putImageData(outputImageData, 0, 0);
+    };
+  }, [props.edgeDetection]);
 
   const handleExport = useCallback(() => {
     const canvas = canvasRef.current;

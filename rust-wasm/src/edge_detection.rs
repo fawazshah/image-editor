@@ -40,7 +40,7 @@ pub fn sobel_edge_detect(original_image: &[u8], width: usize, height: usize) -> 
     }
 
     // Final output will be (width - 2) * (height - 2) * NUM_CHANNELS
-    let converted: Vec<u8> = convert_to_num_channels(&output, width - 2, height - 2);
+    let converted: Vec<u8> = convert_to_rgba(&output, width - 2, height - 2);
     converted
 }
 
@@ -76,8 +76,8 @@ fn convert_to_greyscale(original_image: &[u8], width: usize, height: usize) -> V
     greyscale
 }
 
-// Converts an image of 1 channel back to RGBA format.
-fn convert_to_num_channels(input: &[u8], width: usize, height: usize) -> Vec<u8> {
+// Converts an image of 1 channel back to RGBA format, with full opacity.
+fn convert_to_rgba(input: &[u8], width: usize, height: usize) -> Vec<u8> {
     let mut output: Vec<u8> = vec![0u8; width * height * NUM_CHANNELS];
     for x in 0..width {
         for y in 0..height {
@@ -154,6 +154,27 @@ mod tests {
     }
 
     #[test]
+    fn convert_to_rgba_converts_correctly() {
+        // Arrange
+        let input: Vec<u8> = vec![255, 255, 128, 128, 0, 0];
+
+        const WIDTH: usize = 2;
+        const HEIGHT: usize = 3;
+
+        // Act
+        let output = convert_to_rgba(&input, WIDTH, HEIGHT);
+
+        // Assert
+        assert_eq!(
+            output,
+            vec![
+                255, 255, 255, 255, 255, 255, 255, 255, 128, 128, 128, 255, 128, 128, 128, 255, 0,
+                0, 0, 255, 0, 0, 0, 255,
+            ]
+        )
+    }
+
+    #[test]
     fn sobel_edge_detect_detects_vertical_edge() {
         // Arrange
 
@@ -223,6 +244,44 @@ mod tests {
             vec![
                 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
                 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255,
+            ]
+        )
+    }
+
+    #[test]
+    fn sobel_edge_detect_detects_low_intensity_edge() {
+        // Arrange
+
+        // (50% intensity)
+        // red red green green green
+        // red red green green green
+        // red red green green green
+        // red red green green green
+        // red red green green green
+        let image: Vec<u8> = vec![
+            128, 0, 0, 255, 128, 0, 0, 255, 0, 128, 0, 255, 0, 128, 0, 255, 0, 128, 0, 255, 128, 0,
+            0, 255, 128, 0, 0, 255, 0, 128, 0, 255, 0, 128, 0, 255, 0, 128, 0, 255, 128, 0, 0, 255,
+            128, 0, 0, 255, 0, 128, 0, 255, 0, 128, 0, 255, 0, 128, 0, 255, 128, 0, 0, 255, 128, 0,
+            0, 255, 0, 128, 0, 255, 0, 128, 0, 255, 0, 128, 0, 255, 128, 0, 0, 255, 128, 0, 0, 255,
+            0, 128, 0, 255, 0, 128, 0, 255, 0, 128, 0, 255,
+        ];
+
+        const WIDTH: usize = 5;
+        const HEIGHT: usize = 5;
+
+        // Act
+        let output: Vec<u8> = sobel_edge_detect(&image, WIDTH, HEIGHT);
+
+        // Assert
+
+        // grey grey black
+        // grey grey black
+        // grey grey black
+        assert_eq!(
+            output,
+            vec![
+                148, 148, 148, 255, 148, 148, 148, 255, 0, 0, 0, 255, 148, 148, 148, 255, 148, 148,
+                148, 255, 0, 0, 0, 255, 148, 148, 148, 255, 148, 148, 148, 255, 0, 0, 0, 255,
             ]
         )
     }

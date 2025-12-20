@@ -39,8 +39,7 @@ pub fn sobel_edge_detect(original_image: &[u8], width: usize, height: usize) -> 
         }
     }
 
-    // Final output will be (width - 2) * (height - 2) * NUM_CHANNELS
-    let converted: Vec<u8> = convert_to_rgba(&output, width - 2, height - 2);
+    let converted: Vec<u8> = convert_to_rgba(&output);
     converted
 }
 
@@ -77,19 +76,14 @@ fn convert_to_greyscale(original_image: &[u8], width: usize, height: usize) -> V
 }
 
 // Converts an image of 1 channel back to RGBA format, with full opacity.
-fn convert_to_rgba(input: &[u8], width: usize, height: usize) -> Vec<u8> {
-    let mut output: Vec<u8> = vec![0u8; width * height * NUM_CHANNELS];
-    for x in 0..width {
-        for y in 0..height {
-            let input_idx: usize = y * width + x;
-            let output_idx: usize = (y * width + x) * NUM_CHANNELS;
-
-            // To display greyscale image in RGBA format, RGB channels must be set to same value and A channel to 255
-            output[output_idx] = input[input_idx];
-            output[output_idx + 1] = input[input_idx];
-            output[output_idx + 2] = input[input_idx];
-            output[output_idx + 3] = 255;
-        }
+fn convert_to_rgba(input: &[u8]) -> Vec<u8> {
+    let mut output: Vec<u8> = Vec::new();
+    for i in input {
+        // To display greyscale image in RGBA format, RGB channels must be set to same value and A channel to 255
+        output.push(*i);
+        output.push(*i);
+        output.push(*i);
+        output.push(255);
     }
 
     output
@@ -158,11 +152,8 @@ mod tests {
         // Arrange
         let input: Vec<u8> = vec![255, 255, 128, 128, 0, 0];
 
-        const WIDTH: usize = 2;
-        const HEIGHT: usize = 3;
-
         // Act
-        let output = convert_to_rgba(&input, WIDTH, HEIGHT);
+        let output = convert_to_rgba(&input);
 
         // Assert
         assert_eq!(

@@ -154,6 +154,43 @@ mod tests {
     }
 
     #[test]
+    fn sobel_edge_detect_detects_vertical_edge() {
+        // Arrange
+
+        // red red green green green
+        // red red green green green
+        // red red green green green
+        // red red green green green
+        // red red green green green
+        let image: Vec<u8> = vec![
+            255, 0, 0, 255, 255, 0, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 255, 0,
+            0, 255, 255, 0, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 255, 0, 0, 255,
+            255, 0, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 255, 0, 0, 255, 255, 0,
+            0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
+            0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255,
+        ];
+
+        const WIDTH: usize = 5;
+        const HEIGHT: usize = 5;
+
+        // Act
+        let output: Vec<u8> = sobel_edge_detect(&image, WIDTH, HEIGHT);
+
+        // Assert
+
+        // white white black
+        // white white black
+        // white white black
+        assert_eq!(
+            output,
+            vec![
+                255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255,
+                255, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255,
+            ]
+        )
+    }
+
+    #[test]
     fn sobel_edge_detect_detects_horizontal_edge() {
         // Arrange
 
@@ -186,43 +223,6 @@ mod tests {
             vec![
                 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
                 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255,
-            ]
-        )
-    }
-
-    #[test]
-    fn sobel_edge_detect_detects_green_blue_vertical_edge() {
-        // Arrange
-
-        // green green blue blue blue
-        // green green blue blue blue
-        // green green blue blue blue
-        // green green blue blue blue
-        // green green blue blue blue
-        let image: Vec<u8> = vec![
-            0, 255, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 255,
-            0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 255, 0, 255,
-            0, 255, 0, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 255, 0, 255, 0, 255,
-            0, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 255, 0, 255, 0, 255, 0, 255,
-            0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255,
-        ];
-
-        const WIDTH: usize = 5;
-        const HEIGHT: usize = 5;
-
-        // Act
-        let output: Vec<u8> = sobel_edge_detect(&image, WIDTH, HEIGHT);
-
-        // Assert
-
-        // white white black
-        // white white black
-        // white white black
-        assert_eq!(
-            output,
-            vec![
-                255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255,
-                255, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255,
             ]
         )
     }

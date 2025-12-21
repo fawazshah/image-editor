@@ -15,7 +15,7 @@ The backend is built in Rust, targeting WebAssembly. The frontend is built in Re
 
 ## Implementation details
 
-Usually Gaussian blurring is implemented with a 2D Gaussian kernel, however we make use
+Usually Gaussian blurring is implemented with a 2D Gaussian kernel, however I make use
 of the fact Gaussian blurring is a "separable" algorithm to split this into two iterations
 of blurring, each with a 1D Gaussian kernel.
 

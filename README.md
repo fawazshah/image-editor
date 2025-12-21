@@ -1,8 +1,9 @@
 # Image Editor
 
-A lightweight web-based image editor. Currently supports the following operations:
+A lightweight web-based image editor. Supports the following features:
  - blurring
  - edge detection
+ - importing/exporting images
 
 Blurring is implemented via Gaussian blur, and edge detection with the Sobel algorithm.
 

@@ -1,13 +1,13 @@
 # Image Editor
 
+<img src="/src/assets/preview-gif.gif" width="400">
+
 A lightweight web-based image editor. Supports the following features:
  - blurring
  - edge detection
  - importing/exporting images
 
 Blurring is implemented via Gaussian blur, and edge detection with the Sobel algorithm.
-
-<img src="/src/assets/preview-gif.gif" width="400">
 
 ## Tech stack
 

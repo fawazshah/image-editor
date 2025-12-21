@@ -1,6 +1,6 @@
 # Image Editor
 
-<img src="/src/assets/preview.png" width="200">
+<img src="/src/assets/preview.png" width="400">
 
 An image editor built with a Rust backend, targeting WebAssembly. Supports the following operations:
  - blurring

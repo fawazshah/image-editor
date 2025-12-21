@@ -32,7 +32,13 @@ cd rust-wasm
 wasm-pack build --target web --out-dir ../src/wasm
 ```
 
-To run the React application with Vite:
+To install npm packages for the first time:
+
+```
+npm install
+````
+
+then to run the React application with Vite:
 
 ```
 npm run dev

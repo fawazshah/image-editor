@@ -11,7 +11,7 @@ Blurring is implemented via Gaussian blur, and edge detection with the Sobel alg
 
 ## Tech stack
 
-The backend is built in Rust, targeting WebAssembly. The frontend is built in React + Typescript, using Vite as our build tool.
+The backend is built in Rust, targeting WebAssembly. The frontend is built in React + Typescript, using Vite as the build tool of choice.
 
 ## Implementation details
 

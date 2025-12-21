@@ -1,7 +1,7 @@
 # Image Editor
 
 <p align="center">
-  <img src="/src/assets/preview-gif.gif" width="400">
+  <img src="/src/assets/preview.gif" width="400">
 </p>
 
 A lightweight web-based image editor. Supports the following features:

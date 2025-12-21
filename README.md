@@ -7,7 +7,7 @@ A lightweight web-based image editor. Supports the following features:
 
 Blurring is implemented via Gaussian blur, and edge detection with the Sobel algorithm.
 
-<img src="/src/assets/preview.png" width="400">
+<img src="/src/assets/preview-gif.gif" width="400">
 
 ## Tech stack
 

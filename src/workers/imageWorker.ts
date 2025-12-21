@@ -1,13 +1,16 @@
+/// <reference lib="webworker" />
+
+const ctx = self as DedicatedWorkerGlobalScope;
+
 import init, {
   library_gaussian_blur,
-  gaussian_blur,
   sobel_edge_detect,
 } from "../wasm/wasm.js";
 
-let wasmReady = false;
-let originalPixels = null;
-let width = 0;
-let height = 0;
+let wasmReady: boolean = false;
+let originalPixels: Uint8Array<ArrayBufferLike> | null = null;
+let width: number = 0;
+let height: number = 0;
 
 async function initWasm() {
   if (!wasmReady) {
@@ -16,7 +19,7 @@ async function initWasm() {
   }
 }
 
-self.onmessage = async (e) => {
+self.onmessage = async (e: MessageEvent) => {
   const message = e.data;
 
   // pixels received by worker on initial message only
@@ -41,7 +44,7 @@ self.onmessage = async (e) => {
   }
 };
 
-async function performBlur(blurFactor) {
+async function performBlur(blurFactor: number) {
   await initWasm();
   if (originalPixels == null) return;
   const blurredPixelBytes = library_gaussian_blur(
@@ -50,18 +53,18 @@ async function performBlur(blurFactor) {
     height,
     blurFactor,
   );
-  self.postMessage({ output: blurredPixelBytes }, [blurredPixelBytes.buffer]);
+  ctx.postMessage({ output: blurredPixelBytes }, [blurredPixelBytes.buffer]);
 }
 
 async function performEdgeDetect() {
   await initWasm();
   if (originalPixels == null) return;
   const outputBytes = sobel_edge_detect(originalPixels, width, height);
-  self.postMessage({ output: outputBytes }, [outputBytes.buffer]);
+  ctx.postMessage({ output: outputBytes }, [outputBytes.buffer]);
 }
 
 async function resetOriginalImage() {
   if (originalPixels == null) return;
   const originalCopy = new Uint8ClampedArray(originalPixels);
-  self.postMessage({ output: originalCopy }, [originalCopy.buffer]);
+  ctx.postMessage({ output: originalCopy }, [originalCopy.buffer]);
 }

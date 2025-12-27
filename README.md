@@ -33,7 +33,8 @@ To build Rust code targetting WASM:
 
 ```
 cd rust-wasm
-wasm-pack build --target web --out-dir ../src/wasm
+wasm-pack build --release --target web --out-dir ../src/wasm
+cd ..
 ```
 
 To install npm packages for the first time:

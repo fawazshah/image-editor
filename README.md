@@ -11,6 +11,8 @@ A lightweight web-based image editor. Supports the following features:
 
 Blurring is implemented via Gaussian blur, and edge detection with the Sobel algorithm.
 
+<b>Try it out [here](https://image-editor.fawazshah.xyz/)</b>.
+
 ## Tech stack
 
 The backend is built in Rust, targeting WebAssembly. The frontend is built in React + Typescript, using Vite as the build tool of choice.

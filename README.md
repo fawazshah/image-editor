@@ -54,3 +54,9 @@ To view documentation for the Rust code:
 ```
 cargo doc --no-deps --open
 ```
+
+To run linting and formatting:
+
+```
+npm run format
+```

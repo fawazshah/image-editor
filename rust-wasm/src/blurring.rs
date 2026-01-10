@@ -123,7 +123,7 @@ pub fn library_gaussian_blur(
     height: usize,
     blur: u32,
 ) -> Vec<u8> {
-    let blur_sigma: f32 = blur as f32 / 5.0;
+    let blur_sigma: f32 = blur as f32 / 8.0;
     let img: DynamicImage = DynamicImage::ImageRgba8(
         ImageBuffer::<Rgba<u8>, _>::from_raw(width as u32, height as u32, pixel_bytes.to_vec())
             .expect("Invalid dimensions"),

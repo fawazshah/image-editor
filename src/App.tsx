@@ -33,7 +33,6 @@ function App() {
             onChange={(e) => {
               const checked = e.target.checked;
               if (checked) {
-                setBlurFactor(1);
                 setEdgeDetection(true);
               } else {
                 setEdgeDetection(false);

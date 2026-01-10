@@ -9,6 +9,7 @@ import init, {
 
 let wasmReady: boolean = false;
 let originalPixels: Uint8Array<ArrayBufferLike> | null = null;
+let blurredPixels: Uint8Array<ArrayBufferLike> | null = null;
 let width: number = 0;
 let height: number = 0;
 
@@ -39,8 +40,8 @@ self.onmessage = async (e: MessageEvent) => {
     performEdgeDetect();
   }
 
-  if (message.type == "resetOriginalImage") {
-    resetOriginalImage();
+  if (message.type == "undoEdgeDetect") {
+    undoEdgeDetect();
   }
 };
 
@@ -53,18 +54,23 @@ async function performBlur(blurFactor: number) {
     height,
     blurFactor,
   );
+  blurredPixels = new Uint8Array(blurredPixelBytes);
   ctx.postMessage({ output: blurredPixelBytes }, [blurredPixelBytes.buffer]);
 }
 
 async function performEdgeDetect() {
   await initWasm();
   if (originalPixels == null) return;
-  const outputBytes = sobel_edge_detect(originalPixels, width, height);
+  const outputBytes = sobel_edge_detect(
+    blurredPixels ?? originalPixels,
+    width,
+    height,
+  );
   ctx.postMessage({ output: outputBytes }, [outputBytes.buffer]);
 }
 
-async function resetOriginalImage() {
+async function undoEdgeDetect() {
   if (originalPixels == null) return;
-  const originalCopy = new Uint8ClampedArray(originalPixels);
+  const originalCopy = new Uint8ClampedArray(blurredPixels ?? originalPixels);
   ctx.postMessage({ output: originalCopy }, [originalCopy.buffer]);
 }

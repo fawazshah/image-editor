@@ -107,7 +107,7 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
       });
     } else {
       imageWorker.postMessage({
-        type: "resetOriginalImage",
+        type: "undoEdgeDetect",
       });
     }
 

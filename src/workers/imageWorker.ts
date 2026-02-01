@@ -44,6 +44,7 @@ self.onmessage = async (e: MessageEvent) => {
   // pixels received by worker on initial message only
   if (message.type === "init") {
     originalPixels = message.pixelBytes;
+    blurredPixels = message.pixelBytes;
     width = message.width;
     height = message.height;
   }

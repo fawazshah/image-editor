@@ -14,7 +14,10 @@ function App() {
         initialImageUrl={initialImage}
         blurFactor={blurFactor}
         edgeDetection={edgeDetection}
-        onImageChange={() => setBlurFactor(1)}
+        onImageChange={() => {
+          setBlurFactor(1);
+          setEdgeDetection(false);
+        }}
       />
       <h1>Image Editor</h1>
       <Form className="form">
@@ -30,14 +33,8 @@ function App() {
         <div className="form-item">
           <Form.Switch
             label="Detect Edges"
-            onChange={(e) => {
-              const checked = e.target.checked;
-              if (checked) {
-                setEdgeDetection(true);
-              } else {
-                setEdgeDetection(false);
-              }
-            }}
+            checked={edgeDetection ?? false}
+            onChange={(e) => setEdgeDetection(e.target.checked)}
           />
         </div>
       </Form>

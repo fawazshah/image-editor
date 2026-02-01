@@ -1,6 +1,11 @@
 import React, { useEffect, useRef, useCallback } from "react";
 import ImageWorker from "../workers/imageWorker?worker";
-import { StyledClickableCanvas, StyledButton } from "./StyledClickableCanvas";
+import {
+  StyledClickableCanvas,
+  StyledButton,
+  StyledTooltip,
+} from "./StyledClickableCanvas";
+import { OverlayTrigger } from "react-bootstrap";
 
 export type ClickableCanvasProps = {
   initialImageUrl: string;
@@ -144,12 +149,17 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
         style={{ display: "none" }}
       />
 
-      {/* Clickable canvas */}
-      <canvas
-        ref={canvasRef}
-        onClick={handleCanvasClick}
-        style={{ cursor: "pointer" }}
-      />
+      <OverlayTrigger
+        placement="right"
+        overlay={<StyledTooltip>Click to upload an image!</StyledTooltip>}
+      >
+        {/* Clickable canvas */}
+        <canvas
+          ref={canvasRef}
+          onClick={handleCanvasClick}
+          style={{ cursor: "pointer" }}
+        />
+      </OverlayTrigger>
 
       <StyledButton onClick={() => handleExport()}>Export</StyledButton>
     </StyledClickableCanvas>

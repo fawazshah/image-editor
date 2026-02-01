@@ -73,6 +73,23 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
     inputRef.current?.click();
   }, []);
 
+  // On output from worker, insert into canvas context
+  const handleOutputImage = () => {
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+
+    imageWorkerRef.current.onmessage = (e) => {
+      const outputImageData = new ImageData(
+        new Uint8ClampedArray(e.data.output),
+        canvas.width,
+        canvas.height,
+      );
+      context.putImageData(outputImageData, 0, 0);
+    };
+  };
+
   // Blur image if blur factor changed
   useEffect(() => {
     const imageWorker = imageWorkerRef.current;
@@ -81,19 +98,7 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
       blurFactor: props.blurFactor,
     });
 
-    if (!canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
-    if (!context) return;
-
-    imageWorker.onmessage = (e) => {
-      const blurredImageData = new ImageData(
-        new Uint8ClampedArray(e.data.output),
-        canvas.width,
-        canvas.height,
-      );
-      context?.putImageData(blurredImageData, 0, 0);
-    };
+    handleOutputImage();
   }, [props.blurFactor]);
 
   // Display edge detected image or original, depending on edge detection setting
@@ -111,19 +116,7 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
       });
     }
 
-    if (!canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
-    if (!context) return;
-
-    imageWorker.onmessage = (e) => {
-      const outputImageData = new ImageData(
-        new Uint8ClampedArray(e.data.output),
-        canvas.width,
-        canvas.height,
-      );
-      context?.putImageData(outputImageData, 0, 0);
-    };
+    handleOutputImage();
   }, [props.edgeDetection]);
 
   const handleExport = useCallback(() => {

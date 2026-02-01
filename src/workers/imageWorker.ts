@@ -1,5 +1,23 @@
 /// <reference lib="webworker" />
 
+export type workerMessage =
+  | {
+      type: "init";
+      pixelBytes: Uint8Array;
+      width: number;
+      height: number;
+    }
+  | {
+      type: "blur";
+      blurFactor: number;
+    }
+  | {
+      type: "edgeDetect";
+    }
+  | {
+      type: "undoEdgeDetect";
+    };
+
 const ctx = self as DedicatedWorkerGlobalScope;
 
 import init, {
@@ -21,7 +39,7 @@ async function initWasm() {
 }
 
 self.onmessage = async (e: MessageEvent) => {
-  const message = e.data;
+  const message = e.data as workerMessage;
 
   // pixels received by worker on initial message only
   if (message.type === "init") {

@@ -57,9 +57,9 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
     if (!context) return;
 
     context.drawImage(video, PADDING, PADDING);
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
     // TODO: send frame to web worker
+    // const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
     video.requestVideoFrameCallback(() => processVideoFrames(video));
   };

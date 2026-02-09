@@ -22,6 +22,7 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const imageWorkerRef = useRef<Worker>(new ImageWorker());
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Draw image on canvas, and transfer to web worker
   const renderImage = useCallback((img: HTMLImageElement) => {
@@ -49,9 +50,10 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
   }, []);
 
   // Process each video frame one at a time
-  const processVideoFrames = (video: HTMLVideoElement) => {
+  const processVideoFrames = () => {
     const canvas = canvasRef.current;
-    if (!canvas || video.paused || video.ended) return;
+    const video = videoRef.current;
+    if (!canvas || !video || video.paused || video.ended) return;
 
     const context = canvas.getContext("2d");
     if (!context) return;
@@ -61,7 +63,7 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
     // TODO: send frame to web worker
     // const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
-    video.requestVideoFrameCallback(() => processVideoFrames(video));
+    video.requestVideoFrameCallback(() => processVideoFrames());
   };
 
   // Draw video to canvas
@@ -78,8 +80,9 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
 
       video.muted = true;
       video.loop = true;
+      videoRef.current = video;
       video.play().then(() => {
-        processVideoFrames(video);
+        processVideoFrames();
       });
 
       // TODO: transfer initial frame to worker
@@ -100,6 +103,7 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
       if (!file) return;
 
       if (file.type.startsWith("image/")) {
+        videoRef.current = null; // Remove video if set
         const img = new Image();
         img.src = URL.createObjectURL(file);
         renderImage(img);

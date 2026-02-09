@@ -20,5 +20,6 @@ export const StyledTooltip = styled(Tooltip)`
     border: 1px solid #ccc;
     font-size: medium;
     white-space: nowrap;
+    max-width: none;
   }
 `;

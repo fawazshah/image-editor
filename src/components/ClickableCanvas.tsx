@@ -31,6 +31,7 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
       const context = canvas.getContext("2d");
       if (!context) return;
 
+      // Extra padding as blurring expands beyond image border
       canvas.width = img.width + PADDING * 2;
       canvas.height = img.height + PADDING * 2;
       context.drawImage(img, PADDING, PADDING);
@@ -47,6 +48,44 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
     };
   }, []);
 
+  // Process each video frame one at a time
+  const processVideoFrames = (video: HTMLVideoElement) => {
+    const canvas = canvasRef.current;
+    if (!canvas || video.paused || video.ended) return;
+
+    const context = canvas.getContext("2d");
+    if (!context) return;
+
+    context.drawImage(video, PADDING, PADDING);
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+    // TODO: send frame to web worker
+
+    video.requestVideoFrameCallback(() => processVideoFrames(video));
+  };
+
+  // Draw video to canvas
+  const renderVideo = useCallback((video: HTMLVideoElement) => {
+    video.onloadeddata = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const context = canvas.getContext("2d");
+      if (!context) return;
+
+      canvas.width = video.videoWidth + PADDING * 2;
+      canvas.height = video.videoHeight + PADDING * 2;
+      context.drawImage(video, PADDING, PADDING);
+
+      video.muted = true;
+      video.loop = true;
+      video.play().then(() => {
+        processVideoFrames(video);
+      });
+
+      // TODO: transfer initial frame to worker
+    };
+  }, []);
+
   // Render initial image
   useEffect(() => {
     const img = new Image();
@@ -55,22 +94,30 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
   }, [props.initialImageUrl, renderImage]);
 
   // Handle file upload
-  const handleImageUpload = useCallback(
+  const handleFileUpload = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (!file) return;
 
-      if (!file.type.startsWith("image/")) {
-        alert("Please upload an image!");
+      if (file.type.startsWith("image/")) {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        renderImage(img);
+        props.onImageChange();
         return;
       }
 
-      const img = new Image();
-      img.src = URL.createObjectURL(file);
-      renderImage(img);
-      props.onImageChange();
+      if (file.type.startsWith("video/")) {
+        const video = document.createElement("video");
+        video.src = URL.createObjectURL(file);
+        renderVideo(video);
+        return;
+      }
+
+      alert("Please upload an image or video!");
+      return;
     },
-    [renderImage, props],
+    [renderImage, renderVideo, props],
   );
 
   // Open file upload dialogue on canvas click
@@ -144,14 +191,14 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
-        onChange={handleImageUpload}
+        accept="image/*,video/*"
+        onChange={handleFileUpload}
         style={{ display: "none" }}
       />
 
       <OverlayTrigger
         placement="right"
-        overlay={<StyledTooltip>Click to upload an image!</StyledTooltip>}
+        overlay={<StyledTooltip>Upload an image or video!</StyledTooltip>}
       >
         {/* Clickable canvas */}
         <canvas

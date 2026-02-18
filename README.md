@@ -4,7 +4,9 @@
   <img src="/src/assets/preview.gif" width="400">
 </p>
 
-A lightweight web-based image editor. Supports the following features:
+A lightweight web-based image editor. Written the old-fashioned way, without an LLM!
+
+Supports the following features:
  - blurring
  - edge detection
  - importing/exporting images

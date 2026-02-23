@@ -4,6 +4,7 @@ pub mod blurring;
 pub mod edge_detection;
 
 const NUM_CHANNELS: usize = 4;
+const KERNEL_RADIUS: usize = 1;
 
 #[wasm_bindgen(start)]
 fn start() {

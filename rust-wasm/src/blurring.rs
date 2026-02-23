@@ -1,18 +1,17 @@
 use image::{DynamicImage, ImageBuffer, Rgba};
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::NUM_CHANNELS;
+use crate::{KERNEL_RADIUS, NUM_CHANNELS};
 
 /// Blurs an input image, given in bytes, by a blur factor. Blur factor must be
 /// between 0 and 100. Returns a vector of bytes that is transferred in ownership back to JS.
 #[wasm_bindgen]
 pub fn gaussian_blur(original_image: &[u8], width: usize, height: usize, blur: u32) -> Vec<u8> {
     let blur_sigma: f32 = blur as f32 / 5.0;
-    let radius: usize = (blur_sigma * 3.0).ceil() as usize;
-    let kernel: Vec<f32> = one_d_gaussian_kernel(radius, blur_sigma);
+    let kernel: Vec<f32> = one_d_gaussian_kernel(blur_sigma);
 
-    let temp_image: Vec<u8> = horizontal_pass(original_image, &kernel, width, height, radius);
-    let output_image: Vec<u8> = vertical_pass(&temp_image, &kernel, width, height, radius);
+    let temp_image: Vec<u8> = horizontal_pass(original_image, &kernel, width, height);
+    let output_image: Vec<u8> = vertical_pass(&temp_image, &kernel, width, height);
 
     output_image
 }
@@ -22,7 +21,6 @@ fn vertical_pass(
     kernel: &[f32],
     width: usize,
     height: usize,
-    radius: usize,
 ) -> Vec<u8> {
     let mut output: Vec<u8> = vec![0; original.len()];
 
@@ -34,7 +32,7 @@ fn vertical_pass(
             let mut a: f32 = 0.0;
 
             for (k, kernel_value) in kernel.iter().enumerate() {
-                let offset: usize = k - radius;
+                let offset: usize = k - KERNEL_RADIUS;
                 let y_to_convolve: usize = (y + offset).clamp(0, height - 1);
                 let idx_to_convolve: usize = (y_to_convolve * width + x) * NUM_CHANNELS;
 
@@ -61,7 +59,6 @@ fn horizontal_pass(
     kernel: &[f32],
     width: usize,
     height: usize,
-    radius: usize,
 ) -> Vec<u8> {
     let mut output: Vec<u8> = vec![0; original.len()];
 
@@ -73,7 +70,7 @@ fn horizontal_pass(
             let mut a: f32 = 0.0;
 
             for (k, kernel_value) in kernel.iter().enumerate() {
-                let offset: usize = k - radius;
+                let offset: usize = k - KERNEL_RADIUS;
                 let x_to_convolve: usize = (x + offset).clamp(0, width - 1);
                 let idx_to_convolve: usize = (y * width + x_to_convolve) * NUM_CHANNELS;
 
@@ -95,14 +92,14 @@ fn horizontal_pass(
     output
 }
 
-fn one_d_gaussian_kernel(radius: usize, sigma: f32) -> Vec<f32> {
-    let size: usize = 2 * radius + 1;
+fn one_d_gaussian_kernel(sigma: f32) -> Vec<f32> {
+    let size: usize = 2 * KERNEL_RADIUS + 1;
     let mut kernel: Vec<f32> = vec![0.0; size];
     let two_sigma_squared: f32 = 2.0 * sigma * sigma;
     let mut sum: f32 = 0.0;
 
     for (i, kernel_value) in kernel.iter_mut().enumerate() {
-        let pos: f32 = i as f32 - radius as f32;
+        let pos: f32 = i as f32 - KERNEL_RADIUS as f32;
         *kernel_value = (-(pos * pos) / two_sigma_squared).exp();
         sum += *kernel_value;
     }
@@ -141,16 +138,15 @@ mod tests {
     use rstest::rstest;
 
     #[rstest]
-    #[case(3, 2.0, vec![0.07015932, 0.13107488, 0.19071281, 0.21610592, 0.19071281, 0.13107488, 0.07015932])]
-    #[case(3, 1.0, vec![0.004433048, 0.05400558, 0.24203622, 0.39905027, 0.24203622, 0.05400558, 0.004433048])]
-    #[case(4, 2.0, vec![0.027630549, 0.06628224, 0.12383153, 0.18017381, 0.20416369, 0.18017381, 0.12383153, 0.06628224, 0.027630549])]
+    #[case(1.0, vec![0.27406862, 0.45186275, 0.27406862])]
+    #[case(2.0, vec![0.3191678, 0.36166447, 0.3191678])]
+    #[case(3.0, vec![0.32710442, 0.34579116, 0.32710442])]
     fn gaussian_kernel_creates_correct_kernel(
-        #[case] radius: usize,
         #[case] sigma: f32,
         #[case] expected_kernel: Vec<f32>,
     ) {
         // Act
-        let kernel: Vec<f32> = one_d_gaussian_kernel(radius, sigma);
+        let kernel: Vec<f32> = one_d_gaussian_kernel(sigma);
 
         // Assert
         assert_eq!(kernel, expected_kernel);

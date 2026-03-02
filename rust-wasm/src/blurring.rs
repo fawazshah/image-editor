@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use image::{DynamicImage, ImageBuffer, Rgba};
 use wasm_bindgen::prelude::wasm_bindgen;
 
@@ -100,7 +102,7 @@ fn one_d_gaussian_kernel(sigma: f32) -> Vec<f32> {
 
     for (i, kernel_value) in kernel.iter_mut().enumerate() {
         let pos: f32 = i as f32 - KERNEL_RADIUS as f32;
-        *kernel_value = (-(pos * pos) / two_sigma_squared).exp();
+        *kernel_value = 1.0 / (sigma * (2.0 * PI).sqrt()) * (-(pos * pos) / two_sigma_squared).exp();
         sum += *kernel_value;
     }
 
@@ -138,9 +140,9 @@ mod tests {
     use rstest::rstest;
 
     #[rstest]
-    #[case(1.0, vec![0.27406862, 0.45186275, 0.27406862])]
-    #[case(2.0, vec![0.3191678, 0.36166447, 0.3191678])]
-    #[case(3.0, vec![0.32710442, 0.34579116, 0.32710442])]
+    #[case(1.0, vec![0.27406862, 0.45186278, 0.27406862])]
+    #[case(2.0, vec![0.3191678, 0.3616645, 0.3191678])]
+    #[case(3.0, vec![0.32710442, 0.3457912, 0.32710442])]
     fn gaussian_kernel_creates_correct_kernel(
         #[case] sigma: f32,
         #[case] expected_kernel: Vec<f32>,

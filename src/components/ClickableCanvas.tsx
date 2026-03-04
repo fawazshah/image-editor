@@ -103,15 +103,24 @@ export const ClickableCanvas: React.FC<ClickableCanvasProps> = (
       if (!file) return;
 
       if (file.type.startsWith("image/")) {
+        if (file.size >= 10000000) {
+          alert("Image larger than 10MB, please upload something smaller!");
+          return;
+        }
         videoRef.current = null; // Remove video if set
         const img = new Image();
         img.src = URL.createObjectURL(file);
         renderImage(img);
         props.onImageChange();
+        URL.revokeObjectURL(img.src);
         return;
       }
 
       if (file.type.startsWith("video/")) {
+        if (file.size >= 20000000) {
+          alert("Video larger than 20MB, please upload something smaller!");
+          return;
+        }
         const video = document.createElement("video");
         video.src = URL.createObjectURL(file);
         renderVideo(video);

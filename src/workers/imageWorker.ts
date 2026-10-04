@@ -28,6 +28,7 @@ import init, {
 let wasmReady: boolean = false;
 let originalPixels: Uint8Array<ArrayBufferLike> | null = null;
 let blurredPixels: Uint8Array<ArrayBufferLike> | null = null;
+let edgeDetectionEnabled: boolean = false;
 let width: number = 0;
 let height: number = 0;
 
@@ -41,55 +42,51 @@ async function initWasm() {
 self.onmessage = async (e: MessageEvent) => {
   const message = e.data as workerMessage;
 
-  // pixels received by worker on initial message only
+  // pixels received by worker on initial message only. New image starts unblurred with no edge detection
   if (message.type === "init") {
     originalPixels = message.pixelBytes;
     blurredPixels = message.pixelBytes;
+    edgeDetectionEnabled = false;
     width = message.width;
     height = message.height;
   }
 
   // blurring request only receives blur factor, we apply blur to stored pixels
   if (message.type === "blur") {
-    performBlur(message.blurFactor);
+    await performBlur(message.blurFactor);
+    render();
   }
 
-  // edge detection requires no params
+  // edge detection toggles only change the setting, reusing the cached blurred pixels
   if (message.type == "edgeDetect") {
-    performEdgeDetect();
+    edgeDetectionEnabled = true;
+    render();
   }
 
   if (message.type == "undoEdgeDetect") {
-    undoEdgeDetect();
+    edgeDetectionEnabled = false;
+    render();
   }
 };
 
 async function performBlur(blurFactor: number) {
   await initWasm();
   if (originalPixels == null) return;
-  const blurredPixelBytes = library_gaussian_blur(
+  blurredPixels = library_gaussian_blur(
     originalPixels,
     width,
     height,
     blurFactor,
   );
-  blurredPixels = new Uint8Array(blurredPixelBytes);
-  ctx.postMessage({ output: blurredPixelBytes }, [blurredPixelBytes.buffer]);
 }
 
-async function performEdgeDetect() {
+// Applies edge detection on top of the blurred image if enabled, then posts result to main thread
+async function render() {
   await initWasm();
   if (originalPixels == null) return;
-  const outputBytes = sobel_edge_detect(
-    blurredPixels ?? originalPixels,
-    width,
-    height,
-  );
+  const basePixels = blurredPixels ?? originalPixels;
+  const outputBytes = edgeDetectionEnabled
+    ? sobel_edge_detect(basePixels, width, height)
+    : new Uint8Array(basePixels); // copy, so cached pixels aren't detached on transfer
   ctx.postMessage({ output: outputBytes }, [outputBytes.buffer]);
-}
-
-async function undoEdgeDetect() {
-  if (originalPixels == null) return;
-  const originalCopy = new Uint8ClampedArray(blurredPixels ?? originalPixels);
-  ctx.postMessage({ output: originalCopy }, [originalCopy.buffer]);
 }
